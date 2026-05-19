@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle Financeiro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f0f4f8 0%, #e8eef5 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        h1 {
+            color: #2563eb;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .form-card {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+            padding: 8px 12px;
+            font-size: 0.9em;
+            flex: none;
+        }
+
+        .btn-delete:hover {
+            background: #dc2626;
+        }
+
+        .list-card {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .list-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: #f9fafb;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-desc {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .item-meta {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .item-value {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #2563eb;
+            margin-right: 15px;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .total {
+            padding: 20px;
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            color: white;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Controle Financeiro</h1>
+            <p>Gerencie seus gastos de forma simples</p>
+        </header>
+
+        <div class="form-card">
+            <h2 style="margin-bottom: 20px;">Adicionar Gasto</h2>
+            <div id="alert"></div>
+
+            <div class="form-group">
+                <label>Descrição (ex: Ônix, Netflix...)</label>
+                <input type="text" id="descricao" placeholder="O que você gastou?">
+            </div>
+
+            <div class="form-group">
+                <label>Valor (R$)</label>
+                <input type="number" id="valor" placeholder="0.00" step="0.01" min="0">
+            </div>
+
+            <div class="form-group">
+                <label>Categoria</label>
+                <select id="categoria">
+                    <option value="">Escolha uma categoria</option>
+                    <option value="Gastos Fixos">📌 Gastos Fixos</option>
+                    <option value="Gastos Esporádicos">⚡ Gastos Esporádicos</option>
+                </select>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-primary" onclick="adicionarGasto()">Adicionar</button>
+                <button class="btn-secondary" onclick="limparFormulario()">Limpar</button>
+            </div>
+        </div>
+
+        <div class="list-card">
+            <div class="total" id="totalDisplay">R$ 0,00</div>
+            <div class="list-title">Gastos Registrados</div>
+            <div id="listaGastos" class="loading">Carregando...</div>
+        </div>
+    </div>
+
+    <script>
+        // URL do Google Apps Script (atualize com a sua)
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw46DoSc-LFFkiy7P8q7-WKizG-CtTI4f4_ltl4yOmpugjy04AvpRxUSBN-sGfTrntm_Q/exec';
+
+        let gastos = [];
+
+        // Carregar gastos ao abrir a página
+        window.addEventListener('load', carregarGastos);
+
+        // Função para carregar gastos do Google Sheets
+        async function carregarGastos() {
+            try {
+                console.log('Carregando gastos...');
+                const response = await fetch(SCRIPT_URL);
+                gastos = await response.json();
+                console.log('Gastos carregados:', gastos);
+                renderizarGastos();
+            } catch (error) {
+                console.error('Erro ao carregar:', error);
+                mostrarAlerta('Erro ao carregar dados', 'error');
+            }
+        }
+
+        // Função para adicionar gasto
+        async function adicionarGasto() {
+            const descricao = document.getElementById('descricao').value.trim();
+            const valor = parseFloat(document.getElementById('valor').value);
+            const categoria = document.getElementById('categoria').value;
+
+            // Validação
+            if (!descricao || !valor || valor <= 0 || !categoria) {
+                mostrarAlerta('Preencha todos os campos', 'error');
+                return;
+            }
+
+            try {
+                console.log('Enviando gasto para Sheets...');
+                
+                // Enviar para Google Sheets
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'add',
+                        descricao: descricao,
+                        valor: valor,
+                        categoria: categoria,
+                        data: new Date().toLocaleString('pt-BR')
+                    })
+                });
+
+                if (response.ok) {
+                    console.log('Gasto adicionado com sucesso');
+                    mostrarAlerta('✅ Gasto adicionado!', 'success');
+                    limparFormulario();
+                    
+                    // Aguardar um pouco e recarregar
+                    setTimeout(carregarGastos, 1000);
+                } else {
+                    mostrarAlerta('Erro ao salvar', 'error');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                mostrarAlerta('Erro ao conectar com servidor', 'error');
+            }
+        }
+
+        // Renderizar lista de gastos
+        function renderizarGastos() {
+            const container = document.getElementById('listaGastos');
+            
+            if (!gastos || gastos.length === 0) {
+                container.innerHTML = '<div class="empty">Nenhum gasto registrado ainda</div>';
+                document.getElementById('totalDisplay').textContent = 'R$ 0,00';
+                return;
+            }
+
+            // Calcular total
+            let total = 0;
+            gastos.forEach(g => {
+                total += parseFloat(g.valor) || 0;
+            });
+
+            // Renderizar itens
+            let html = '';
+            gastos.forEach((gasto, index) => {
+                const valor = parseFloat(gasto.valor).toFixed(2);
+                html += `
+                    <div class="item">
+                        <div class="item-info">
+                            <div class="item-desc">${gasto.descricao}</div>
+                            <div class="item-meta">${gasto.categoria} • ${gasto.data || 'Sem data'}</div>
+                        </div>
+                        <div class="item-value">R$ ${valor}</div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            document.getElementById('totalDisplay').textContent = `R$ ${total.toFixed(2)}`;
+        }
+
+        // Mostrar alerta
+        function mostrarAlerta(mensagem, tipo) {
+            const alertDiv = document.getElementById('alert');
+            alertDiv.className = `alert alert-${tipo}`;
+            alertDiv.textContent = mensagem;
+            
+            setTimeout(() => {
+                alertDiv.innerHTML = '';
+            }, 3000);
+        }
+
+        // Limpar formulário
+        function limparFormulario() {
+            document.getElementById('descricao').value = '';
+            document.getElementById('valor').value = '';
+            document.getElementById('categoria').value = '';
+        }
+    </script>
+</body>
+</html>
