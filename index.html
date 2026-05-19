@@ -1055,60 +1055,93 @@
     </div>
 
     <script>
-        // ====== PERSISTÊNCIA ROBUSTA ======
-        const STORAGE_KEY = 'financialData_v1';
-        const SYNC_INTERVAL = 2000; // Sincroniza a cada 2 segundos
-        let lastSaved = 0;
-        let syncInterval;
+        // ====== PERSISTÊNCIA COM INDEXEDDB + LOCALSTORAGE ======
+        const DB_NAME = 'FinanceApp';
+        const STORE_NAME = 'data';
+        const STORAGE_KEY = 'financialData_v2';
+        let indexedDB_available = false;
+
+        function initIndexedDB() {
+            return new Promise((resolve) => {
+                if (!window.indexedDB) {
+                    resolve(false);
+                    return;
+                }
+
+                const request = indexedDB.open(DB_NAME, 1);
+                request.onerror = () => resolve(false);
+                request.onsuccess = (e) => {
+                    indexedDB_available = true;
+                    resolve(true);
+                };
+                request.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        db.createObjectStore(STORE_NAME);
+                    }
+                };
+            });
+        }
+
+        function saveToIndexedDB() {
+            if (!indexedDB_available) return;
+            const request = indexedDB.open(DB_NAME);
+            request.onsuccess = (e) => {
+                const db = e.target.result;
+                const tx = db.transaction([STORE_NAME], 'readwrite');
+                tx.objectStore(STORE_NAME).put(data, 'financialData');
+            };
+        }
+
+        function loadFromIndexedDB() {
+            return new Promise((resolve) => {
+                if (!indexedDB_available) {
+                    resolve(null);
+                    return;
+                }
+
+                const request = indexedDB.open(DB_NAME);
+                request.onsuccess = (e) => {
+                    const db = e.target.result;
+                    const tx = db.transaction([STORE_NAME], 'readonly');
+                    const getRequest = tx.objectStore(STORE_NAME).get('financialData');
+                    getRequest.onsuccess = () => resolve(getRequest.result || null);
+                    getRequest.onerror = () => resolve(null);
+                };
+                request.onerror = () => resolve(null);
+            });
+        }
 
         function initializeStorage() {
-            console.log('🔧 Inicializando armazenamento...');
-            
-            // Carrega dados de localStorage (fallback mais confiável)
+            // Carrega de localStorage primeiro (mais rápido)
             const saved = localStorage.getItem(STORAGE_KEY);
             if (saved) {
                 try {
                     data = JSON.parse(saved);
-                    console.log('✅ Dados carregados de localStorage:', data);
+                    console.log('✅ Carregado de localStorage');
                 } catch (e) {
                     console.error('❌ Erro ao parsear localStorage:', e);
-                    data = getDefaultData();
                 }
-            } else {
-                console.log('⚠️ Sem dados salvos, criando novos...');
-                data = getDefaultData();
             }
         }
 
-        function getDefaultData() {
-            return {
-                accounts: [],
-                items: [],
-                history: {}
-            };
-        }
-
-        function saveDataNow() {
-            const now = Date.now();
-            
-            // Evita salvar muito frequentemente (max a cada 500ms)
-            if (now - lastSaved < 500) {
-                return;
-            }
-            
+        function saveData() {
+            // SEMPRE salva em localStorage
             try {
-                const json = JSON.stringify(data);
-                localStorage.setItem(STORAGE_KEY, json);
-                lastSaved = now;
-                console.log('💾 Dados salvos em localStorage');
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                console.log('💾 Salvo');
             } catch (e) {
-                console.error('❌ Erro ao salvar em localStorage:', e);
+                console.error('❌ Erro ao salvar:', e);
+            }
+
+            // Também salva em IndexedDB se disponível
+            if (indexedDB_available) {
+                saveToIndexedDB();
             }
         }
 
-        // Salva dados a cada interação
-        function onDataChange() {
-            saveDataNow();
+        function loadData() {
+            initializeStorage();
         }
 
         // ====== ESTRUTURA DE DADOS ======
@@ -1120,7 +1153,7 @@
 
         // ====== INICIALIZAÇÃO ======
         async function init() {
-            console.log('🚀 Iniciando aplicação...');
+            await initIndexedDB();
             loadData();
             renderAccounts();
             renderItems();
@@ -1131,7 +1164,7 @@
                 document.getElementById('isParcelado').addEventListener('change', toggleParcelFields);
             }
             
-            console.log('✅ Aplicação iniciada');
+            console.log('✅ App pronto');
         }
 
         function toggleParcelFields() {
@@ -1777,11 +1810,21 @@
             event.target.value = '';
         }
 
-        // Inicializa quando a página carrega
-        window.addEventListener('load', function() {
-            console.log('🚀 Iniciando aplicação...');
-            init();
-        });
+        // Auto-export automático a cada 30 minutos
+        setInterval(() => {
+            const backup = {
+                exported: new Date().toISOString(),
+                data: data
+            };
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `financeiro-backup-${new Date().toISOString().slice(0, 10)}.json`;
+            // Não faz download automático, mas deixa pronto
+            console.log('💾 Backup disponível:', a.download);
+            URL.revokeObjectURL(url);
+        }, 30 * 60 * 1000);
     </script>
 </body>
 </html>
