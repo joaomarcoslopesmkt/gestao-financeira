@@ -1050,6 +1050,29 @@
     </div>
 
     <script>
+        // ====== VERSIONAMENTO DE DADOS ======
+        const DATA_VERSION = 2; // Incrementar quando houver mudanças de estrutura
+
+        function initializeData() {
+            const savedVersion = localStorage.getItem('dataVersion');
+            
+            if (!savedVersion || parseInt(savedVersion) < DATA_VERSION) {
+                // Migrar dados antigos se necessário
+                migrateData(parseInt(savedVersion) || 0);
+                localStorage.setItem('dataVersion', DATA_VERSION);
+            }
+            
+            loadData();
+        }
+
+        function migrateData(fromVersion) {
+            // Preserva dados antigos e faz conversões se necessário
+            if (fromVersion < 2) {
+                // Versão 1 para 2: pode adicionar novas migrations aqui
+                console.log('Dados migrados para versão 2');
+            }
+        }
+
         // ====== ESTRUTURA DE DADOS ======
         let data = {
             accounts: [],
@@ -1059,7 +1082,7 @@
 
         // ====== INICIALIZAÇÃO ======
         function init() {
-            loadData();
+            initializeData();
             renderAccounts();
             renderItems();
             updateDashboard();
