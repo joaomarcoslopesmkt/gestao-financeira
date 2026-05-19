@@ -1055,11 +1055,60 @@
     </div>
 
     <script>
-        // ====== PERSISTÊNCIA COM INDEXEDDB + LOCALSTORAGE ======
-        const DB_NAME = 'FinanceApp';
-        const STORE_NAME = 'data';
-        const STORAGE_KEY = 'financialData_v2';
-        let indexedDB_available = false;
+        // ====== GOOGLE SHEETS INTEGRATION ======
+        const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw46DoSc-LFFkiy7P8q7-WKizG-CtTI4f4_ltl4yOmpugjy04AvpRxUSBN-sGfTrntm_Q/exec';
+
+        async function loadDataFromSheets() {
+            try {
+                console.log('📊 Carregando dados do Google Sheets...');
+                const response = await fetch(GOOGLE_APPS_SCRIPT_URL);
+                const items = await response.json();
+                
+                if (Array.isArray(items) && items.length > 0) {
+                    // Reorganiza os dados em formato esperado
+                    const accounts = new Set();
+                    data.items = items;
+                    
+                    items.forEach(item => {
+                        if (item.conta && !accounts.has(item.conta)) {
+                            accounts.add(item.conta);
+                            data.accounts.push({
+                                id: Date.now() + Math.random(),
+                                name: item.conta,
+                                groups: ['Gastos Fixos', 'Gastos Esporádicos']
+                            });
+                        }
+                    });
+                    
+                    console.log('✅ Dados carregados:', data);
+                }
+            } catch (error) {
+                console.error('❌ Erro ao carregar do Sheets:', error);
+            }
+        }
+
+        async function saveItemToSheets(item) {
+            try {
+                console.log('📤 Enviando para Google Sheets...');
+                await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'add',
+                        conta: item.accountId,
+                        categoria: item.group,
+                        descricao: item.desc,
+                        valor: item.value,
+                        isFixo: item.isFixed,
+                        isParcelado: item.isParcelado,
+                        parcelCurrent: item.parcelCurrent,
+                        parcelTotal: item.parcelTotal
+                    })
+                });
+                console.log('✅ Salvo no Sheets');
+            } catch (error) {
+                console.error('❌ Erro ao salvar no Sheets:', error);
+            }
+        }
 
         function initIndexedDB() {
             return new Promise((resolve) => {
@@ -1155,6 +1204,7 @@
         async function init() {
             await initIndexedDB();
             loadData();
+            await loadDataFromSheets(); // Carrega do Google Sheets
             renderAccounts();
             renderItems();
             updateDashboard();
@@ -1164,7 +1214,7 @@
                 document.getElementById('isParcelado').addEventListener('change', toggleParcelFields);
             }
             
-            console.log('✅ App pronto');
+            console.log('✅ App pronto com Google Sheets');
         }
 
         function toggleParcelFields() {
