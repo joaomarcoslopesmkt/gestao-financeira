@@ -1820,6 +1820,12 @@
             // Limpa o input para permitir reimportação do mesmo arquivo
             event.target.value = '';
         }
+
+        // Inicializa quando a página carrega
+        window.addEventListener('load', function() {
+            console.log('🚀 Iniciando aplicação...');
+            init();
+        });
     </script>
 </body>
 </html>
