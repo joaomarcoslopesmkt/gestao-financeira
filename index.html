@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão Financeira Pessoal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #ffffff;
+            --secondary: #f8f6f3;
+            --accent: #ff6b5b;
+            --accent-alt: #ffa857;
+            --success: #4ecdc4;
+            --warning: #ffe66d;
+            --bg: #faf8f5;
+            --bg-secondary: #ffffff;
+            --text-primary: #2d2416;
+            --text-secondary: #8b7d6b;
+            --border: #e8dfd5;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+            --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.15);
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+            background: linear-gradient(180deg, var(--bg) 0%, #faf7f2 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-bottom: 40px;
+            border-bottom: 2px solid var(--border);
+            animation: slideInDown 0.6s ease;
+        }
+
+        @keyframes slideInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            font-size: 3em;
+            font-weight: 300;
+            margin-bottom: 10px;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-alt) 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-subtitle {
+            color: var(--text-secondary);
+            font-size: 1em;
+            font-weight: 400;
+        }
+
+        .header-info {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .info-block {
+            text-align: center;
+            padding: 20px 30px;
+            background: var(--secondary);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.6s ease;
+            animation-fill-mode: both;
+        }
+
+        .info-block:nth-child(1) { animation-delay: 0.1s; }
+        .info-block:nth-child(2) { animation-delay: 0.2s; }
+        .info-block:nth-child(3) { animation-delay: 0.3s; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .info-block:hover {
+            background: var(--bg-secondary);
+            border-color: var(--accent);
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .info-label {
+            font-size: 0.8em;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .info-value {
+            font-size: 2em;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-alt) 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 14px 28px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: var(--secondary);
+        }
+
+        .tab-btn.active {
+            color: var(--accent);
+            background: var(--secondary);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 1024px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 30px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card:hover {
+            border-color: var(--accent);
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-header {
+            font-size: 1.4em;
+            font-weight: 700;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-total {
+            font-size: 1.6em;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-alt) 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        .account-section {
+            margin-bottom: 30px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .account-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .account-name {
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1em;
+        }
+
+        .account-total {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-alt) 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.1em;
+        }
+
+        .group-item {
+            padding: 12px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-secondary);
+            font-size: 0.95em;
+            margin-left: 15px;
+            transition: all 0.2s ease;
+            border-radius: 6px;
+            padding: 12px 10px;
+        }
+
+        .group-item:hover {
+            background: var(--secondary);
+            color: var(--text-primary);
+        }
+
+        .group-label {
+            flex: 1;
+        }
+
+        .group-value {
+            color: var(--accent);
+            font-weight: 700;
+            min-width: 100px;
+            text-align: right;
+        }
+
+        .section-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.95em;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--secondary);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: var(--bg-secondary);
+            box-shadow: 0 0 0 4px rgba(255, 107, 91, 0.1);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 14px;
+            background: var(--secondary);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
+        }
+
+        .checkbox-group:hover {
+            border-color: var(--accent);
+            background: var(--bg-secondary);
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--accent);
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        button {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            font-size: 0.85em;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-alt) 100%);
+            color: white;
+            flex: 1;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: var(--text-primary);
+            flex: 1;
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-secondary);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .btn-danger {
+            background: #fff0ed;
+            color: var(--accent);
+            border: 2px solid var(--accent);
+        }
+
+        .btn-danger:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-small {
+            padding: 8px 14px;
+            font-size: 0.8em;
+        }
+
+        .list-item {
+            background: var(--secondary);
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 2px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .list-item:hover {
+            border-color: var(--accent);
+            background: var(--bg-secondary);
+            transform: translateX(5px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .list-item-info {
+            flex: 1;
+        }
+
+        .list-item-desc {
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: var(--text-primary);
+        }
+
+        .list-item-meta {
+            font-size: 0.85em;
+            color: var(--text-secondary);
+        }
+
+        .list-item-value {
+            font-size: 1.15em;
+            font-weight: 700;
+            color: var(--accent);
+            text-align: right;
+            min-width: 120px;
+        }
+
+        .list-item-value.negative {
+            color: var(--accent-alt);
+        }
+
+        .list-item-actions {
+            display: flex;
+            gap: 8px;
+            margin-left: 15px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 15px;
+            opacity: 0.6;
+        }
+
+        .empty-state-text {
+            font-size: 1.1em;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(6px);
+        }
+
+        .modal.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 35px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            font-size: 1.6em;
+            font-weight: 700;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--secondary);
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.8em;
+            cursor: pointer;
+            padding: 5px 12px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .alert {
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+            font-weight: 600;
+            border: 2px solid;
+        }
+
+        .alert-success {
+            background: #f0fdf4;
+            border-color: var(--success);
+            color: #166534;
+        }
+
+        .parcel-info {
+            background: #fff8f0;
+            border-left: 4px solid var(--accent);
+            padding: 12px 15px;
+            margin-top: 10px;
+            font-size: 0.85em;
+            color: var(--text-secondary);
+            border-radius: 8px;
+        }
+
+        .history-month {
+            margin-bottom: 35px;
+            padding: 25px;
+            background: var(--secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .history-month-title {
+            font-size: 1.25em;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        .history-month-total {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-alt) 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .layout {
+                gap: 20px;
+            }
+
+            .row {
+                grid-template-columns: 1fr;
+            }
+
+            .header-info {
+                gap: 15px;
+                flex-direction: column;
+            }
+
+            .info-block {
+                padding: 15px 20px;
+            }
+
+            .tabs {
+                gap: 8px;
+            }
+
+            .tab-btn {
+                padding: 10px 16px;
+                font-size: 0.9em;
+            }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-box {
+            background: var(--secondary);
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-box:hover {
+            border-color: var(--accent);
+            transform: translateY(-5px);
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-alt) 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        li {
+            margin-bottom: 12px;
+            padding-left: 5px;
+        }
+
+        li:before {
+            content: "✓ ";
+            color: var(--accent);
+            font-weight: 700;
+            margin-right: 8px;
+        }
+
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-alt) 100%);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 2em;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 500;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 40px rgba(255, 107, 91, 0.3);
+        }
+
+        .fab:active {
+            transform: scale(0.95);
+        }
+
+        @media (max-width: 768px) {
+            .fab {
+                bottom: 20px;
+                right: 20px;
+                width: 60px;
+                height: 60px;
+                font-size: 1.6em;
+            }
+        }
+    </style>
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💰 Minhas Finanças</h1>
+            <p class="header-subtitle">Controle seus gastos de forma simples e inteligente</p>
+            <div class="header-info">
+                <div class="info-block">
+                    <div class="info-label">💰 Próximo Pagamento</div>
+                    <div class="info-value" id="nextPaymentAmount">R$ 0,00</div>
+                </div>
+                <div class="info-block">
+                    <div class="info-label">📅 Data</div>
+                    <div class="info-value" id="nextPaymentDate">--</div>
+                </div>
+                <div class="info-block">
+                    <div class="info-label">📌 Dias para Pagar</div>
+                    <div class="info-value" id="daysToPayment">--</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab(event, 'dashboard')">📊 Dashboard</button>
+            <button class="tab-btn" onclick="switchTab(event, 'manage')">⚙️ Gerenciar</button>
+            <button class="tab-btn" onclick="switchTab(event, 'history')">📈 Histórico</button>
+            <button class="tab-btn" onclick="switchTab(event, 'backup')">💾 Backup</button>
+        </div>
+
+        <!-- TAB: DASHBOARD -->
+        <div id="dashboard" class="tab-content active">
+            <div class="card">
+                <div class="section-title">➕ Adicionar Novo Gasto</div>
+                
+                <div class="form-group">
+                    <label>Conta</label>
+                    <select id="quickItemAccount">
+                        <option value="">Escolha uma conta...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Grupo</label>
+                    <select id="quickItemGroup">
+                        <option value="">Selecione um grupo</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>O que você está gastando?</label>
+                    <input type="text" id="quickItemDesc" placeholder="Ex: Parcela Ônix, Netflix...">
+                </div>
+
+                <div class="form-group">
+                    <label>Quanto? (R$)</label>
+                    <input type="number" id="quickItemValue" placeholder="0,00" step="0.01" min="0">
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="quickIsParcelado">
+                    <label for="quickIsParcelado">Este é um gasto <strong>parcelado</strong>?</label>
+                </div>
+
+                <div id="quickParcelFields" style="display: none;">
+                    <div class="row">
+                        <div class="form-group">
+                            <label>Em qual parcela estou?</label>
+                            <input type="number" id="quickParcelCurrent" min="1" placeholder="33">
+                        </div>
+                        <div class="form-group">
+                            <label>Total de parcelas</label>
+                            <input type="number" id="quickParcelTotal" min="1" placeholder="48">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="quickIsFixed" checked>
+                    <label for="quickIsFixed">Este gasto <strong>repete todo mês</strong>?</label>
+                </div>
+
+                <button class="btn-primary" onclick="addItemQuick()">➕ Adicionar Gasto</button>
+            </div>
+
+            <div class="card" style="margin-top: 30px;">
+                <div class="card-header">
+                    <div>📍 Próximo Pagamento (dia 10)</div>
+                    <div class="card-total" id="nextPaymentTotal">R$ 0,00</div>
+                </div>
+                <div id="nextPaymentList"></div>
+            </div>
+        </div>
+
+        <!-- TAB: MANAGE -->
+        <div id="manage" class="tab-content">
+            <div class="layout">
+                <!-- Criar/Editar Conta -->
+                <div class="card">
+                    <div class="section-title">🏦 Minhas Contas</div>
+                    <div class="form-group">
+                        <label>Nome da Conta</label>
+                        <input type="text" id="accountName" placeholder="Ex: Cartão João, Fixos João...">
+                    </div>
+                    <button class="btn-primary" onclick="addAccount()">➕ Criar Conta</button>
+                    <div id="accountsList" style="margin-top: 25px;"></div>
+                </div>
+
+                <!-- Criar Item -->
+                <div class="card">
+                    <div class="section-title">💸 Novo Gasto</div>
+                    
+                    <div class="form-group">
+                        <label>Conta</label>
+                        <select id="itemAccount">
+                            <option value="">Escolha uma conta...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Grupo</label>
+                        <select id="itemGroup">
+                            <option value="">Selecione um grupo</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>O que você está gastando?</label>
+                        <input type="text" id="itemDesc" placeholder="Ex: Parcela Ônix, Netflix, Aluguel...">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Quanto? (R$)</label>
+                        <input type="number" id="itemValue" placeholder="0,00" step="0.01" min="0">
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="isParcelado">
+                        <label for="isParcelado">Este é um gasto <strong>parcelado</strong>?</label>
+                    </div>
+
+                    <div id="parcelFields" style="display: none;">
+                        <div class="row">
+                            <div class="form-group">
+                                <label>Em qual parcela estou?</label>
+                                <input type="number" id="parcelCurrent" min="1" placeholder="33">
+                            </div>
+                            <div class="form-group">
+                                <label>Total de parcelas</label>
+                                <input type="number" id="parcelTotal" min="1" placeholder="48">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="isFixed" checked>
+                        <label for="isFixed">Este gasto <strong>repete todo mês</strong>?</label>
+                    </div>
+
+                    <button class="btn-primary" onclick="addItem()">➕ Adicionar Gasto</button>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 30px;">
+                <div class="section-title">📋 Todos os Gastos Cadastrados</div>
+                <div id="itemsList"></div>
+            </div>
+        </div>
+
+        <!-- TAB: HISTORY -->
+        <div id="history" class="tab-content">
+            <div class="card">
+                <div class="section-title">⏰ Histórico de Meses Passados</div>
+                <div id="historyList"></div>
+            </div>
+        </div>
+
+        <!-- TAB: BACKUP -->
+        <div id="backup" class="tab-content">
+            <div class="card">
+                <div class="section-title">💾 Backup de Dados</div>
+                <p style="color: var(--text-secondary); margin-bottom: 25px;">Exporte seus dados para fazer backup ou importe um arquivo anterior</p>
+                
+                <div class="button-group">
+                    <button class="btn-primary" onclick="exportData()">📥 Exportar Dados</button>
+                    <button class="btn-secondary" onclick="document.getElementById('importFile').click()">📤 Importar Dados</button>
+                    <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+                </div>
+
+                <div style="margin-top: 30px; padding: 20px; background: var(--secondary); border-radius: 12px; border: 2px solid var(--border);">
+                    <div style="font-weight: 600; margin-bottom: 10px; color: var(--text-primary);">ℹ️ Como usar:</div>
+                    <ul style="margin-left: 20px; color: var(--text-secondary); line-height: 1.8;">
+                        <li><strong>Exportar:</strong> Cria um arquivo .json com todos os seus dados. Guarde em um lugar seguro.</li>
+                        <li><strong>Importar:</strong> Carrega um arquivo anterior. Isso vai sobrescrever os dados atuais.</li>
+                        <li><strong>Sincronizar:</strong> Se você muda de navegador ou limpa o cache, importe para recuperar tudo.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTÃO FLUTUANTE -->
+    <button class="fab" onclick="switchTab(event, 'dashboard'); document.getElementById('quickItemDesc').focus();" title="Adicionar gasto">➕</button>
+
+    <!-- MODAL: Editar Grupo -->
+    <div id="groupModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('groupModal')">✕</button>
+            <div class="modal-header">🏷️ Editar Grupos</div>
+            <div id="groupModalBody"></div>
+            <div class="button-group">
+                <button class="btn-primary" onclick="closeModal('groupModal')">✓ Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ====== ESTRUTURA DE DADOS ======
+        let data = {
+            accounts: [],
+            items: [],
+            history: {}
+        };
+
+        // ====== INICIALIZAÇÃO ======
+        function init() {
+            loadData();
+            renderAccounts();
+            renderItems();
+            updateDashboard();
+            updateReferenceDate();
+            document.getElementById('isParcelado').addEventListener('change', toggleParcelFields);
+        }
+
+        function toggleParcelFields() {
+            const parcelFields = document.getElementById('parcelFields');
+            parcelFields.style.display = document.getElementById('isParcelado').checked ? 'block' : 'none';
+        }
+
+        function updateReferenceDate() {
+            const today = new Date();
+            const day = today.getDate();
+            const month = today.getMonth();
+            const year = today.getFullYear();
+
+            let nextPaymentDay;
+            if (day <= 10) {
+                // Este mês ainda tem pagamento até dia 10
+                nextPaymentDay = new Date(year, month, 10);
+            } else {
+                // Próximo mês, dia 10
+                nextPaymentDay = new Date(year, month + 1, 10);
+            }
+
+            const daysUntil = Math.ceil((nextPaymentDay - today) / (1000 * 60 * 60 * 24));
+
+            document.getElementById('nextPaymentDate').textContent = nextPaymentDay.toLocaleDateString('pt-BR', { 
+                day: 'numeric', 
+                month: 'long', 
+                year: 'numeric' 
+            });
+            
+            document.getElementById('daysToPayment').textContent = `${daysUntil} dias`;
+        }
+
+        // ====== CÁLCULOS ======
+        function getNextPaymentItems() {
+            const today = new Date();
+            const day = today.getDate();
+            const month = today.getMonth();
+            const year = today.getFullYear();
+
+            let targetDate;
+            if (day <= 10) {
+                // Próximo pagamento é neste mês, dia 10
+                targetDate = new Date(year, month, 10);
+            } else {
+                // Próximo pagamento é no próximo mês, dia 10
+                targetDate = new Date(year, month + 1, 10);
+            }
+
+            return data.items.filter(item => {
+                // Só mostra itens que são fixos
+                if (!item.isFixed) return false;
+
+                if (item.isParcelado) {
+                    const itemDate = new Date(item.createdDate);
+                    const monthsDiff = (targetDate.getFullYear() - itemDate.getFullYear()) * 12 + 
+                                       (targetDate.getMonth() - itemDate.getMonth());
+                    const parcelIndex = item.parcelCurrent - 1 + monthsDiff;
+                    
+                    // Verifica se a parcela ainda é válida
+                    return parcelIndex >= 0 && parcelIndex < item.parcelTotal;
+                }
+
+                return true;
+            });
+        }
+
+        function updateDashboard() {
+            const items = getNextPaymentItems();
+            const total = items.reduce((sum, i) => sum + i.value, 0);
+
+            document.getElementById('nextPaymentAmount').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+            document.getElementById('nextPaymentTotal').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+
+            renderNextPaymentList(items);
+        }
+
+        function renderNextPaymentList(items) {
+            const el = document.getElementById('nextPaymentList');
+            if (items.length === 0) {
+                el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">✨</div><div class="empty-state-text">Nenhum gasto para o próximo pagamento</div></div>';
+                return;
+            }
+
+            const grouped = {};
+            items.forEach(item => {
+                const acc = data.accounts.find(a => a.id == item.accountId);
+                const key = acc ? acc.name : 'Desconhecido';
+                if (!grouped[key]) grouped[key] = [];
+                grouped[key].push(item);
+            });
+
+            let html = '';
+            Object.entries(grouped).forEach(([accName, items]) => {
+                const total = items.reduce((sum, i) => sum + i.value, 0);
+                html += `<div class="account-section">
+                    <div class="account-name">
+                        <span>🏦 ${accName}</span>
+                        <span class="account-total">R$ ${total.toFixed(2).replace('.', ',')}</span>
+                    </div>`;
+                items.forEach(item => {
+                    html += `<div class="group-item">
+                        <span class="group-label">💳 ${item.desc}</span>
+                        <span class="group-value">R$ ${item.value.toFixed(2).replace('.', ',')}</span>
+                    </div>`;
+                });
+                html += '</div>';
+            });
+            el.innerHTML = html;
+        }
+
+        // ====== CONTAS ======
+        function addAccount() {
+            const name = document.getElementById('accountName').value.trim();
+            if (!name) {
+                showAlert('Digite o nome da conta', 'error');
+                return;
+            }
+            if (data.accounts.find(a => a.name === name)) {
+                showAlert('Esta conta já existe', 'error');
+                return;
+            }
+            data.accounts.push({
+                id: Date.now(),
+                name: name,
+                groups: ['Gastos Fixos', 'Gastos Esporádicos']
+            });
+            document.getElementById('accountName').value = '';
+            saveData();
+            renderAccounts();
+            updateSelectOptions();
+            showAlert('✓ Conta criada com sucesso!', 'success');
+        }
+
+        function deleteAccount(id) {
+            if (confirm('⚠️ Tem certeza? Os gastos associados também serão removidos.')) {
+                data.accounts = data.accounts.filter(a => a.id !== id);
+                data.items = data.items.filter(i => i.accountId !== id);
+                saveData();
+                renderAccounts();
+                renderItems();
+                updateDashboard();
+                updateSelectOptions();
+                showAlert('✓ Conta deletada', 'success');
+            }
+        }
+
+        function editGroups(accountId) {
+            const account = data.accounts.find(a => a.id === accountId);
+            const modal = document.getElementById('groupModal');
+            const body = document.getElementById('groupModalBody');
+
+            let html = `<div class="form-group">
+                <label>Grupos de "<strong>${account.name}</strong>"</label>
+                <div id="groupsList" style="margin-top: 15px;">`;
+            
+            account.groups.forEach((group, idx) => {
+                html += `<div class="list-item" style="margin-bottom: 10px;">
+                    <input type="text" value="${group}" data-group-idx="${idx}" style="flex: 1; border: 2px solid var(--border);">
+                    <button class="btn-danger btn-small" style="margin-left: 10px;" onclick="deleteGroup(${accountId}, ${idx})">🗑️</button>
+                </div>`;
+            });
+
+            html += `</div><div class="form-group" style="margin-top: 20px;">
+                <label>Adicionar novo grupo</label>
+                <input type="text" id="newGroupName" placeholder="Ex: Gastos com Viagem">
+                <button class="btn-primary" style="margin-top: 10px;" onclick="addGroup(${accountId})">➕ Adicionar</button>
+            </div>`;
+
+            body.innerHTML = html;
+            modal.classList.add('active');
+        }
+
+        function addGroup(accountId) {
+            const newGroupName = document.getElementById('newGroupName').value.trim();
+            if (!newGroupName) {
+                showAlert('Digite o nome do grupo', 'error');
+                return;
+            }
+            const account = data.accounts.find(a => a.id === accountId);
+            if (!account.groups.includes(newGroupName)) {
+                account.groups.push(newGroupName);
+                saveData();
+                editGroups(accountId);
+                showAlert('✓ Grupo adicionado!', 'success');
+            } else {
+                showAlert('Este grupo já existe', 'error');
+            }
+        }
+
+        function deleteGroup(accountId, idx) {
+            if (confirm('⚠️ Deletar este grupo?')) {
+                const account = data.accounts.find(a => a.id === accountId);
+                account.groups.splice(idx, 1);
+                saveData();
+                editGroups(accountId);
+                showAlert('✓ Grupo deletado', 'success');
+            }
+        }
+
+        function renderAccounts() {
+            const list = document.getElementById('accountsList');
+            if (data.accounts.length === 0) {
+                list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🏦</div><div class="empty-state-text">Nenhuma conta criada ainda</div></div>';
+                return;
+            }
+            list.innerHTML = data.accounts.map(acc => `
+                <div class="list-item">
+                    <div class="list-item-info">
+                        <div class="list-item-desc">${acc.name}</div>
+                        <div class="list-item-meta">${acc.groups.join(' • ')}</div>
+                    </div>
+                    <div class="list-item-actions">
+                        <button class="btn-secondary btn-small" onclick="editGroups(${acc.id})">🏷️ Grupos</button>
+                        <button class="btn-danger btn-small" onclick="deleteAccount(${acc.id})">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateSelectOptions() {
+            // Formulário principal
+            const accountSelect = document.getElementById('itemAccount');
+            const groupSelect = document.getElementById('itemGroup');
+
+            accountSelect.innerHTML = '<option value="">Escolha uma conta...</option>' +
+                data.accounts.map(acc => `<option value="${acc.id}">${acc.name}</option>`).join('');
+
+            accountSelect.addEventListener('change', function() {
+                const acc = data.accounts.find(a => a.id == this.value);
+                if (acc) {
+                    groupSelect.innerHTML = acc.groups.map(g => `<option value="${g}">${g}</option>`).join('');
+                } else {
+                    groupSelect.innerHTML = '<option value="">Selecione um grupo</option>';
+                }
+            });
+
+            // Formulário rápido na home
+            const quickAccountSelect = document.getElementById('quickItemAccount');
+            const quickGroupSelect = document.getElementById('quickItemGroup');
+
+            quickAccountSelect.innerHTML = '<option value="">Escolha uma conta...</option>' +
+                data.accounts.map(acc => `<option value="${acc.id}">${acc.name}</option>`).join('');
+
+            quickAccountSelect.addEventListener('change', function() {
+                const acc = data.accounts.find(a => a.id == this.value);
+                if (acc) {
+                    quickGroupSelect.innerHTML = acc.groups.map(g => `<option value="${g}">${g}</option>`).join('');
+                } else {
+                    quickGroupSelect.innerHTML = '<option value="">Selecione um grupo</option>';
+                }
+            });
+        }
+
+        function addItemQuick() {
+            const accountId = document.getElementById('quickItemAccount').value;
+            const group = document.getElementById('quickItemGroup').value;
+            const desc = document.getElementById('quickItemDesc').value.trim();
+            const value = parseFloat(document.getElementById('quickItemValue').value);
+            const isParcelado = document.getElementById('quickIsParcelado').checked;
+            const isFixed = document.getElementById('quickIsFixed').checked;
+
+            if (!accountId || !group || !desc || isNaN(value) || value <= 0) {
+                showAlert('⚠️ Preencha todos os campos corretamente', 'error');
+                return;
+            }
+
+            const item = {
+                id: Date.now(),
+                accountId: parseInt(accountId),
+                group: group,
+                desc: desc,
+                value: value,
+                isFixed: isFixed,
+                isParcelado: isParcelado,
+                parcelCurrent: isParcelado ? parseInt(document.getElementById('quickParcelCurrent').value) : 0,
+                parcelTotal: isParcelado ? parseInt(document.getElementById('quickParcelTotal').value) : 0,
+                createdDate: new Date().toISOString()
+            };
+
+            if (isParcelado && (!item.parcelCurrent || !item.parcelTotal || item.parcelCurrent > item.parcelTotal)) {
+                showAlert('⚠️ Informe corretamente as parcelas', 'error');
+                return;
+            }
+
+            data.items.push(item);
+            saveData();
+            clearQuickItemForm();
+            renderItems();
+            updateDashboard();
+            showAlert('✓ Gasto adicionado com sucesso!', 'success');
+        }
+
+        function clearQuickItemForm() {
+            document.getElementById('quickItemDesc').value = '';
+            document.getElementById('quickItemValue').value = '';
+            document.getElementById('quickIsParcelado').checked = false;
+            document.getElementById('quickParcelCurrent').value = '';
+            document.getElementById('quickParcelTotal').value = '';
+            document.getElementById('quickIsFixed').checked = true;
+            document.getElementById('quickParcelFields').style.display = 'none';
+        }
+
+        document.getElementById('quickIsParcelado').addEventListener('change', function() {
+            document.getElementById('quickParcelFields').style.display = this.checked ? 'block' : 'none';
+        });
+
+        // ====== ITENS ======
+        function addItem() {
+            const accountId = document.getElementById('itemAccount').value;
+            const group = document.getElementById('itemGroup').value;
+            const desc = document.getElementById('itemDesc').value.trim();
+            const value = parseFloat(document.getElementById('itemValue').value);
+            const isParcelado = document.getElementById('isParcelado').checked;
+            const isFixed = document.getElementById('isFixed').checked;
+
+            if (!accountId || !group || !desc || isNaN(value) || value <= 0) {
+                showAlert('⚠️ Preencha todos os campos corretamente', 'error');
+                return;
+            }
+
+            const item = {
+                id: Date.now(),
+                accountId: parseInt(accountId),
+                group: group,
+                desc: desc,
+                value: value,
+                isFixed: isFixed,
+                isParcelado: isParcelado,
+                parcelCurrent: isParcelado ? parseInt(document.getElementById('parcelCurrent').value) : 0,
+                parcelTotal: isParcelado ? parseInt(document.getElementById('parcelTotal').value) : 0,
+                createdDate: new Date().toISOString()
+            };
+
+            if (isParcelado && (!item.parcelCurrent || !item.parcelTotal || item.parcelCurrent > item.parcelTotal)) {
+                showAlert('⚠️ Informe corretamente as parcelas', 'error');
+                return;
+            }
+
+            data.items.push(item);
+            saveData();
+            clearItemForm();
+            renderItems();
+            updateDashboard();
+            showAlert('✓ Gasto adicionado com sucesso!', 'success');
+        }
+
+        function clearItemForm() {
+            document.getElementById('itemDesc').value = '';
+            document.getElementById('itemValue').value = '';
+            document.getElementById('isParcelado').checked = false;
+            document.getElementById('parcelCurrent').value = '';
+            document.getElementById('parcelTotal').value = '';
+            document.getElementById('isFixed').checked = true;
+            document.getElementById('parcelFields').style.display = 'none';
+        }
+
+        function deleteItem(id) {
+            if (confirm('⚠️ Deseja deletar este gasto?')) {
+                data.items = data.items.filter(i => i.id !== id);
+                saveData();
+                renderItems();
+                updateDashboard();
+                showAlert('✓ Gasto deletado', 'success');
+            }
+        }
+
+        function renderItems() {
+            const list = document.getElementById('itemsList');
+            if (data.items.length === 0) {
+                list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📊</div><div class="empty-state-text">Nenhum gasto cadastrado ainda</div></div>';
+                return;
+            }
+
+            const grouped = {};
+            data.items.forEach(item => {
+                const acc = data.accounts.find(a => a.id == item.accountId);
+                const key = acc ? acc.name : 'Desconhecido';
+                if (!grouped[key]) grouped[key] = {};
+                if (!grouped[key][item.group]) grouped[key][item.group] = [];
+                grouped[key][item.group].push(item);
+            });
+
+            let html = '';
+            Object.entries(grouped).forEach(([accName, groups]) => {
+                html += `<div class="account-section"><div class="account-name">🏦 ${accName}</div>`;
+                Object.entries(groups).forEach(([groupName, items]) => {
+                    html += `<div style="margin-top: 15px;"><div style="font-size: 0.9em; color: var(--text-secondary); margin-bottom: 10px; font-weight: 600;">📂 ${groupName}</div>`;
+                    items.forEach(item => {
+                        const remaining = item.isParcelado ? item.parcelTotal - item.parcelCurrent : 0;
+                        html += `<div class="list-item" style="margin-bottom: 10px;">
+                            <div class="list-item-info">
+                                <div class="list-item-desc">${item.desc}</div>
+                                <div class="list-item-meta">${item.isFixed ? '📌 Fixo' : '⚡ Esporádico'}${item.isParcelado ? ` • ${item.parcelCurrent}/${item.parcelTotal}` : ''}</div>
+                                ${item.isParcelado ? `<div class="parcel-info">⏳ Faltam ${remaining} parcela(s)</div>` : ''}
+                            </div>
+                            <div class="list-item-value">R$ ${item.value.toFixed(2).replace('.', ',')}</div>
+                            <button class="btn-danger btn-small" onclick="deleteItem(${item.id})">✕</button>
+                        </div>`;
+                    });
+                    html += '</div>';
+                });
+                html += '</div>';
+            });
+            list.innerHTML = html;
+        }
+
+        // ====== PERSISTÊNCIA ======
+        function saveData() {
+            localStorage.setItem('financialData', JSON.stringify(data));
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('financialData');
+            if (saved) {
+                data = JSON.parse(saved);
+            }
+        }
+
+        // ====== HISTÓRICO ======
+        function updateHistory() {
+            const today = new Date();
+            const day = today.getDate();
+            const month = today.getMonth();
+            const year = today.getFullYear();
+
+            let historyKey;
+            if (day <= 10) {
+                // Se estamos até dia 10, o histórico é deste mês
+                historyKey = `${year}-${String(month + 1).padStart(2, '0')}`;
+            } else {
+                // Se passou do dia 10, o histórico é do próximo mês
+                const nextMonth = new Date(year, month + 1, 10);
+                historyKey = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, '0')}`;
+            }
+
+            const items = getNextPaymentItems();
+            data.history[historyKey] = {
+                items: items,
+                total: items.reduce((sum, i) => sum + i.value, 0),
+                date: new Date().toISOString()
+            };
+            saveData();
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('historyList');
+            const months = Object.keys(data.history || {}).sort().reverse();
+
+            if (months.length === 0) {
+                list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-text">Sem histórico de meses ainda</div></div>';
+                return;
+            }
+
+            let html = '';
+            months.forEach(month => {
+                const [year, monthNum] = month.split('-');
+                const monthName = new Date(year, monthNum - 1).toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+                const hist = data.history[month];
+
+                html += `<div class="history-month">
+                    <div class="history-month-title">📅 ${monthName} <span class="history-month-total">R$ ${hist.total.toFixed(2).replace('.', ',')}</span></div>`;
+
+                const grouped = {};
+                hist.items.forEach(item => {
+                    const acc = data.accounts.find(a => a.id == item.accountId);
+                    const key = acc ? acc.name : 'Desconhecido';
+                    if (!grouped[key]) grouped[key] = [];
+                    grouped[key].push(item);
+                });
+
+                Object.entries(grouped).forEach(([accName, items]) => {
+                    const total = items.reduce((sum, i) => sum + i.value, 0);
+                    html += `<div style="margin-bottom: 15px; margin-left: 15px;">
+                        <div style="font-weight: 600; margin-bottom: 10px; color: var(--text-primary);">🏦 ${accName} — <span style="color: var(--accent);">R$ ${total.toFixed(2).replace('.', ',')}</span></div>`;
+                    items.forEach(item => {
+                        html += `<div class="group-item">
+                            <span class="group-label">💳 ${item.desc}</span>
+                            <span class="group-value">R$ ${item.value.toFixed(2).replace('.', ',')}</span>
+                        </div>`;
+                    });
+                    html += '</div>';
+                });
+
+                html += '</div>';
+            });
+
+            list.innerHTML = html;
+        }
+
+        // ====== UI ======
+        function switchTab(event, tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tab).classList.add('active');
+            event.target.classList.add('active');
+
+            if (tab === 'history') {
+                updateHistory();
+                renderHistory();
+            }
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function showAlert(msg, type = 'success') {
+            const el = document.createElement('div');
+            el.className = `alert alert-${type}`;
+            el.textContent = msg;
+            document.querySelector('header').appendChild(el);
+            setTimeout(() => el.remove(), 3500);
+        }
+
+        // ====== BACKUP ======
+        function exportData() {
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `backup_financeiro_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showAlert('✓ Arquivo exportado com sucesso!', 'success');
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    
+                    if (!importedData.accounts || !importedData.items || !importedData.history) {
+                        showAlert('⚠️ Arquivo inválido. Verifique o formato.', 'error');
+                        return;
+                    }
+
+                    if (confirm('⚠️ Isso vai sobrescrever todos os seus dados atuais. Tem certeza?')) {
+                        data = importedData;
+                        saveData();
+                        renderAccounts();
+                        renderItems();
+                        updateDashboard();
+                        updateSelectOptions();
+                        showAlert('✓ Dados importados com sucesso!', 'success');
+                    }
+                } catch (err) {
+                    showAlert('⚠️ Erro ao ler o arquivo. Verifique se é um JSON válido.', 'error');
+                }
+            };
+            reader.readAsText(file);
+            
+            // Limpa o input para permitir reimportação do mesmo arquivo
+            event.target.value = '';
+        }
+    </script>
+</body>
+</html>
