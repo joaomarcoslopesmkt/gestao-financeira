@@ -1628,17 +1628,26 @@
 
         // ====== PERSISTÊNCIA ======
         function saveData() {
-            saveDataToDB().catch(err => console.error('Erro ao salvar:', err));
+            // Salva SEMPRE em localStorage como backup garantido
+            localStorage.setItem('financialData', JSON.stringify(data));
+            
+            // Tenta salvar em IndexedDB se disponível
+            if (db) {
+                saveDataToDB().catch(err => {
+                    console.warn('IndexedDB indisponível, usando localStorage:', err);
+                });
+            }
         }
 
         function loadData() {
+            // Tenta localStorage primeiro (mais confiável)
+            loadDataFromLocalStorage();
+            
+            // Se IndexedDB tiver dados mais recentes, usa eles
             if (db) {
                 loadDataFromDB().catch(err => {
-                    console.error('Erro ao carregar de DB:', err);
-                    loadDataFromLocalStorage();
+                    console.log('IndexedDB não disponível, usando localStorage');
                 });
-            } else {
-                loadDataFromLocalStorage();
             }
         }
 
