@@ -1628,38 +1628,52 @@
 
         // ====== PERSISTÊNCIA ======
         function saveData() {
+            console.log('=== SALVANDO DADOS ===');
+            console.log('Dados a salvar:', data);
+            
             // Salva SEMPRE em localStorage como backup garantido
-            localStorage.setItem('financialData', JSON.stringify(data));
+            try {
+                localStorage.setItem('financialData', JSON.stringify(data));
+                console.log('✅ Dados salvos em localStorage');
+            } catch (e) {
+                console.error('❌ Erro ao salvar em localStorage:', e);
+            }
             
             // Tenta salvar em IndexedDB se disponível
             if (db) {
                 saveDataToDB().catch(err => {
-                    console.warn('IndexedDB indisponível, usando localStorage:', err);
+                    console.warn('⚠️ IndexedDB indisponível:', err);
                 });
             }
         }
 
         function loadData() {
-            // Tenta localStorage primeiro (mais confiável)
+            console.log('=== CARREGANDO DADOS ===');
+            
+            // Tenta localStorage primeiro
             loadDataFromLocalStorage();
             
             // Se IndexedDB tiver dados mais recentes, usa eles
             if (db) {
                 loadDataFromDB().catch(err => {
-                    console.log('IndexedDB não disponível, usando localStorage');
+                    console.log('⚠️ IndexedDB não disponível');
                 });
             }
         }
 
         function loadDataFromLocalStorage() {
             const saved = localStorage.getItem('financialData');
+            console.log('localStorage.getItem("financialData"):', saved ? '✅ Encontrado' : '❌ Não encontrado');
+            
             if (saved) {
                 try {
                     data = JSON.parse(saved);
-                    console.log('Dados carregados de localStorage');
+                    console.log('✅ Dados carregados de localStorage:', data);
                 } catch (e) {
-                    console.error('Erro ao parsear localStorage:', e);
+                    console.error('❌ Erro ao parsear localStorage:', e);
                 }
+            } else {
+                console.log('⚠️ localStorage vazio, usando dados padrão');
             }
         }
 
