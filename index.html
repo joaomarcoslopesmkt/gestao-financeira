@@ -1055,66 +1055,60 @@
     </div>
 
     <script>
-        // ====== INDEXEDDB PARA PERSISTÊNCIA ROBUSTA ======
-        const DB_NAME = 'FinancialDB';
-        const DB_VERSION = 1;
-        const STORE_NAME = 'financialData';
-        
-        let db;
+        // ====== PERSISTÊNCIA ROBUSTA ======
+        const STORAGE_KEY = 'financialData_v1';
+        const SYNC_INTERVAL = 2000; // Sincroniza a cada 2 segundos
+        let lastSaved = 0;
+        let syncInterval;
 
-        function initDB() {
-            return new Promise((resolve, reject) => {
-                const request = indexedDB.open(DB_NAME, DB_VERSION);
-                
-                request.onerror = () => {
-                    console.error('Erro ao abrir DB');
-                    reject(request.error);
-                };
-                
-                request.onsuccess = () => {
-                    db = request.result;
-                    console.log('DB aberto com sucesso');
-                    resolve();
-                };
-                
-                request.onupgradeneeded = (event) => {
-                    const newDB = event.target.result;
-                    if (!newDB.objectStoreNames.contains(STORE_NAME)) {
-                        newDB.createObjectStore(STORE_NAME);
-                    }
-                };
-            });
+        function initializeStorage() {
+            console.log('🔧 Inicializando armazenamento...');
+            
+            // Carrega dados de localStorage (fallback mais confiável)
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    data = JSON.parse(saved);
+                    console.log('✅ Dados carregados de localStorage:', data);
+                } catch (e) {
+                    console.error('❌ Erro ao parsear localStorage:', e);
+                    data = getDefaultData();
+                }
+            } else {
+                console.log('⚠️ Sem dados salvos, criando novos...');
+                data = getDefaultData();
+            }
         }
 
-        function saveDataToDB() {
-            return new Promise((resolve, reject) => {
-                const transaction = db.transaction([STORE_NAME], 'readwrite');
-                const store = transaction.objectStore(STORE_NAME);
-                store.put(data, 'financialData');
-                
-                transaction.oncomplete = () => {
-                    console.log('Dados salvos em IndexedDB');
-                    resolve();
-                };
-                transaction.onerror = () => reject(transaction.error);
-            });
+        function getDefaultData() {
+            return {
+                accounts: [],
+                items: [],
+                history: {}
+            };
         }
 
-        function loadDataFromDB() {
-            return new Promise((resolve, reject) => {
-                const transaction = db.transaction([STORE_NAME], 'readonly');
-                const store = transaction.objectStore(STORE_NAME);
-                const request = store.get('financialData');
-                
-                request.onsuccess = () => {
-                    if (request.result) {
-                        data = request.result;
-                        console.log('Dados carregados de IndexedDB');
-                    }
-                    resolve();
-                };
-                request.onerror = () => reject(request.error);
-            });
+        function saveDataNow() {
+            const now = Date.now();
+            
+            // Evita salvar muito frequentemente (max a cada 500ms)
+            if (now - lastSaved < 500) {
+                return;
+            }
+            
+            try {
+                const json = JSON.stringify(data);
+                localStorage.setItem(STORAGE_KEY, json);
+                lastSaved = now;
+                console.log('💾 Dados salvos em localStorage');
+            } catch (e) {
+                console.error('❌ Erro ao salvar em localStorage:', e);
+            }
+        }
+
+        // Salva dados a cada interação
+        function onDataChange() {
+            saveDataNow();
         }
 
         // ====== ESTRUTURA DE DADOS ======
@@ -1126,19 +1120,18 @@
 
         // ====== INICIALIZAÇÃO ======
         async function init() {
-            try {
-                await initDB();
-                await loadData();
-            } catch (err) {
-                console.error('Erro ao inicializar DB:', err);
-                loadData();
-            }
-            
+            console.log('🚀 Iniciando aplicação...');
+            loadData();
             renderAccounts();
             renderItems();
             updateDashboard();
             updateReferenceDate();
-            document.getElementById('isParcelado').addEventListener('change', toggleParcelFields);
+            
+            if (document.getElementById('isParcelado')) {
+                document.getElementById('isParcelado').addEventListener('change', toggleParcelFields);
+            }
+            
+            console.log('✅ Aplicação iniciada');
         }
 
         function toggleParcelFields() {
@@ -1633,53 +1626,11 @@
 
         // ====== PERSISTÊNCIA ======
         function saveData() {
-            console.log('=== SALVANDO DADOS ===');
-            console.log('Dados a salvar:', data);
-            
-            // Salva SEMPRE em localStorage como backup garantido
-            try {
-                localStorage.setItem('financialData', JSON.stringify(data));
-                console.log('✅ Dados salvos em localStorage');
-            } catch (e) {
-                console.error('❌ Erro ao salvar em localStorage:', e);
-            }
-            
-            // Tenta salvar em IndexedDB se disponível
-            if (db) {
-                saveDataToDB().catch(err => {
-                    console.warn('⚠️ IndexedDB indisponível:', err);
-                });
-            }
+            onDataChange();
         }
 
         function loadData() {
-            console.log('=== CARREGANDO DADOS ===');
-            
-            // Tenta localStorage primeiro
-            loadDataFromLocalStorage();
-            
-            // Se IndexedDB tiver dados mais recentes, usa eles
-            if (db) {
-                loadDataFromDB().catch(err => {
-                    console.log('⚠️ IndexedDB não disponível');
-                });
-            }
-        }
-
-        function loadDataFromLocalStorage() {
-            const saved = localStorage.getItem('financialData');
-            console.log('localStorage.getItem("financialData"):', saved ? '✅ Encontrado' : '❌ Não encontrado');
-            
-            if (saved) {
-                try {
-                    data = JSON.parse(saved);
-                    console.log('✅ Dados carregados de localStorage:', data);
-                } catch (e) {
-                    console.error('❌ Erro ao parsear localStorage:', e);
-                }
-            } else {
-                console.log('⚠️ localStorage vazio, usando dados padrão');
-            }
+            initializeStorage();
         }
 
         // ====== HISTÓRICO ======
