@@ -926,68 +926,6 @@
     <!-- BOTÃO FLUTUANTE -->
     <button class="fab" onclick="switchTab(event, 'dashboard'); document.getElementById('quickItemDesc').focus();" title="Adicionar gasto">➕</button>
 
-    <!-- MODAL: Editar Conta -->
-    <div id="editAccountModal" class="modal">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeModal('editAccountModal')">✕</button>
-            <div class="modal-header">✏️ Editar Conta</div>
-            <div class="form-group">
-                <label>Nome da Conta</label>
-                <input type="text" id="editAccountName" placeholder="Nome da conta">
-            </div>
-            <div class="button-group">
-                <button class="btn-primary" onclick="saveEditAccount()">✓ Salvar</button>
-                <button class="btn-secondary" onclick="closeModal('editAccountModal')">Cancelar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: Editar Item -->
-    <div id="editItemModal" class="modal">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeModal('editItemModal')">✕</button>
-            <div class="modal-header">✏️ Editar Gasto</div>
-            
-            <div class="form-group">
-                <label>Descrição</label>
-                <input type="text" id="editItemDesc" placeholder="Ex: Parcela Ônix">
-            </div>
-
-            <div class="form-group">
-                <label>Valor (R$)</label>
-                <input type="number" id="editItemValue" placeholder="0,00" step="0.01" min="0">
-            </div>
-
-            <div class="checkbox-group">
-                <input type="checkbox" id="editIsParcelado">
-                <label for="editIsParcelado">Este é um gasto <strong>parcelado</strong>?</label>
-            </div>
-
-            <div id="editParcelFields" style="display: none;">
-                <div class="row">
-                    <div class="form-group">
-                        <label>Em qual parcela estou?</label>
-                        <input type="number" id="editParcelCurrent" min="1" placeholder="33">
-                    </div>
-                    <div class="form-group">
-                        <label>Total de parcelas</label>
-                        <input type="number" id="editParcelTotal" min="1" placeholder="48">
-                    </div>
-                </div>
-            </div>
-
-            <div class="checkbox-group">
-                <input type="checkbox" id="editIsFixed" checked>
-                <label for="editIsFixed">Este gasto <strong>repete todo mês</strong>?</label>
-            </div>
-
-            <div class="button-group">
-                <button class="btn-primary" onclick="saveEditItem()">✓ Salvar</button>
-                <button class="btn-secondary" onclick="closeModal('editItemModal')">Cancelar</button>
-            </div>
-        </div>
-    </div>
-
     <!-- MODAL: Editar Grupo -->
     <div id="groupModal" class="modal">
         <div class="modal-content">
@@ -1163,34 +1101,6 @@
             }
         }
 
-        let currentEditAccountId = null;
-
-        function editAccount(accountId) {
-            const account = data.accounts.find(a => a.id === accountId);
-            currentEditAccountId = accountId;
-            document.getElementById('editAccountName').value = account.name;
-            document.getElementById('editAccountModal').classList.add('active');
-            document.getElementById('editAccountName').focus();
-        }
-
-        function saveEditAccount() {
-            const newName = document.getElementById('editAccountName').value.trim();
-            if (!newName) {
-                showAlert('⚠️ Digite um nome válido', 'error');
-                return;
-            }
-            
-            const account = data.accounts.find(a => a.id === currentEditAccountId);
-            account.name = newName;
-            saveData();
-            renderAccounts();
-            renderItems();
-            updateDashboard();
-            updateSelectOptions();
-            closeModal('editAccountModal');
-            showAlert('✓ Conta atualizada', 'success');
-        }
-
         function editGroups(accountId) {
             const account = data.accounts.find(a => a.id === accountId);
             const modal = document.getElementById('groupModal');
@@ -1235,18 +1145,8 @@
         }
 
         function deleteGroup(accountId, idx) {
-            const account = data.accounts.find(a => a.id === accountId);
-            const groupName = account.groups[idx];
-            
-            // Verifica se há gastos vinculados a este grupo
-            const hasItems = data.items.some(item => item.accountId === accountId && item.group === groupName);
-            
-            if (hasItems) {
-                showAlert('⚠️ Não é possível deletar esta categoria pois há gastos vinculados. Exclua os gastos primeiro.', 'error');
-                return;
-            }
-            
             if (confirm('⚠️ Deletar este grupo?')) {
+                const account = data.accounts.find(a => a.id === accountId);
                 account.groups.splice(idx, 1);
                 saveData();
                 editGroups(accountId);
@@ -1267,7 +1167,6 @@
                         <div class="list-item-meta">${acc.groups.join(' • ')}</div>
                     </div>
                     <div class="list-item-actions">
-                        <button class="btn-secondary btn-small" onclick="editAccount(${acc.id})">✏️ Editar</button>
                         <button class="btn-secondary btn-small" onclick="editGroups(${acc.id})">🏷️ Grupos</button>
                         <button class="btn-danger btn-small" onclick="deleteAccount(${acc.id})">🗑️</button>
                     </div>
@@ -1422,71 +1321,6 @@
             }
         }
 
-        let currentEditItemId = null;
-
-        function editItem(itemId) {
-            const item = data.items.find(i => i.id === itemId);
-            currentEditItemId = itemId;
-            
-            document.getElementById('editItemDesc').value = item.desc;
-            document.getElementById('editItemValue').value = item.value;
-            document.getElementById('editIsFixed').checked = item.isFixed;
-            document.getElementById('editIsParcelado').checked = item.isParcelado;
-            
-            if (item.isParcelado) {
-                document.getElementById('editParcelFields').style.display = 'block';
-                document.getElementById('editParcelCurrent').value = item.parcelCurrent;
-                document.getElementById('editParcelTotal').value = item.parcelTotal;
-            } else {
-                document.getElementById('editParcelFields').style.display = 'none';
-            }
-            
-            document.getElementById('editItemModal').classList.add('active');
-            document.getElementById('editItemDesc').focus();
-        }
-
-        function saveEditItem() {
-            const desc = document.getElementById('editItemDesc').value.trim();
-            const value = parseFloat(document.getElementById('editItemValue').value);
-            const isFixed = document.getElementById('editIsFixed').checked;
-            const isParcelado = document.getElementById('editIsParcelado').checked;
-
-            if (!desc || isNaN(value) || value <= 0) {
-                showAlert('⚠️ Preencha todos os campos corretamente', 'error');
-                return;
-            }
-
-            const item = data.items.find(i => i.id === currentEditItemId);
-            item.desc = desc;
-            item.value = value;
-            item.isFixed = isFixed;
-            item.isParcelado = isParcelado;
-            
-            if (isParcelado) {
-                item.parcelCurrent = parseInt(document.getElementById('editParcelCurrent').value);
-                item.parcelTotal = parseInt(document.getElementById('editParcelTotal').value);
-                
-                if (!item.parcelCurrent || !item.parcelTotal || item.parcelCurrent > item.parcelTotal) {
-                    showAlert('⚠️ Informe corretamente as parcelas', 'error');
-                    return;
-                }
-            }
-
-            saveData();
-            renderItems();
-            updateDashboard();
-            closeModal('editItemModal');
-            showAlert('✓ Gasto atualizado', 'success');
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            if (document.getElementById('editIsParcelado')) {
-                document.getElementById('editIsParcelado').addEventListener('change', function() {
-                    document.getElementById('editParcelFields').style.display = this.checked ? 'block' : 'none';
-                });
-            }
-        });
-
         function renderItems() {
             const list = document.getElementById('itemsList');
             if (data.items.length === 0) {
@@ -1517,8 +1351,7 @@
                                 ${item.isParcelado ? `<div class="parcel-info">⏳ Faltam ${remaining} parcela(s)</div>` : ''}
                             </div>
                             <div class="list-item-value">R$ ${item.value.toFixed(2).replace('.', ',')}</div>
-                            <button class="btn-secondary btn-small" onclick="editItem(${item.id})">✏️</button>
-                            <button class="btn-danger btn-small" onclick="deleteItem(${item.id})">🗑️</button>
+                            <button class="btn-danger btn-small" onclick="deleteItem(${item.id})">✕</button>
                         </div>`;
                     });
                     html += '</div>';
